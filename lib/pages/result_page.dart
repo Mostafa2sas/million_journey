@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:million_journey/pages/home_page.dart';
 
 class ResultPage extends StatelessWidget {
   const ResultPage({super.key, required this.correctAnswer});
@@ -28,9 +27,8 @@ class ResultPage extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return const HomePage();
-                  }));
+                  Navigator.pop(context);
+                  Navigator.pop(context);
                 },
                 child: Text(
                   'Try again',

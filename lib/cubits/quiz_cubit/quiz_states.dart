@@ -1,16 +1,14 @@
-import 'package:million_journey/models/quiz_model.dart';
-
 abstract class QuizState {}
 
 class QuizInitial extends QuizState {}
 
 class QuizLoadingState extends QuizState {}
 
-class QuizLoadedState extends QuizState {
-  List<QuizModel> questions;
+class QuizLoadedState extends QuizState {}
 
-  QuizLoadedState(this.questions);
-}
+class CorrectAnswerState extends QuizState {}
+
+class AnswerColorState extends QuizState {}
 
 class QuizErrorState extends QuizState {
   final String errMessage;

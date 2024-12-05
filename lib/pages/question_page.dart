@@ -6,69 +6,30 @@ import 'package:million_journey/models/quiz_model.dart';
 import 'package:million_journey/pages/result_page.dart';
 import 'package:million_journey/widgets/custom_button.dart';
 
-class QuestionPage extends StatefulWidget {
+class QuestionPage extends StatelessWidget {
   const QuestionPage({super.key});
 
   @override
-  State<QuestionPage> createState() => _QuestionPageState();
-}
-
-class _QuestionPageState extends State<QuestionPage> {
-  QuizModel? quizModel;
-  int currentIndexOfQuestion = 0;
-  int correctAnswer = 0;
-  int indexOfScore = 0;
-
-  var optionColor = [
-    Colors.blue,
-    Colors.blue,
-    Colors.blue,
-    Colors.blue,
-  ];
-  List<int> score = [
-    0,
-    1000,
-    5000,
-    10000,
-    25000,
-    50000,
-    75000,
-    125000,
-    250000,
-    500000,
-    1000000,
-  ];
-
-  resetColor() {
-    optionColor = [
-      Colors.blue,
-      Colors.blue,
-      Colors.blue,
-      Colors.blue,
-    ];
-  }
-
-  goToNextQuestion() {
-    setState(() {
-      currentIndexOfQuestion++;
-      resetColor();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-      ),
-      body: BlocBuilder<QuizCubit, QuizState>(
-        builder: (context, state) {
-          if (state is QuizLoadingState) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (state is QuizLoadedState) {
+    return BlocProvider(
+      create: (context) => QuizCubit()..getQuestions(),
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
+        body: BlocBuilder<QuizCubit, QuizState>(
+          builder: (context, state) {
+            final cubit = context.read<QuizCubit>();
+            if (state is QuizLoadingState) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (state is QuizErrorState) {
+              return Center(
+                child: Text(state.errMessage),
+              );
+            }
             return Padding(
               padding: const EdgeInsets.symmetric(
                 vertical: 32,
@@ -77,7 +38,7 @@ class _QuestionPageState extends State<QuestionPage> {
               child: Column(
                 children: [
                   Text(
-                    'Score : ${score[indexOfScore]}',
+                    'Score : ${cubit.score[cubit.indexOfScore]}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -85,7 +46,8 @@ class _QuestionPageState extends State<QuestionPage> {
                   ),
                   const SizedBox(height: 30),
                   CustomButton(
-                    text: state.questions[currentIndexOfQuestion].question,
+                    text:
+                        cubit.questions[cubit.currentIndexOfQuestion].question,
                     height: 150,
                     width: double.infinity,
                     color: Colors.blue,
@@ -103,48 +65,45 @@ class _QuestionPageState extends State<QuestionPage> {
                         ),
                         itemBuilder: (context, index) {
                           QuizModel question =
-                              state.questions[currentIndexOfQuestion];
+                              cubit.questions[cubit.currentIndexOfQuestion];
                           return CustomButton(
-                            color: optionColor[index],
+                            color: cubit.optionColor[index],
                             height: 150,
                             width: 460,
                             text: question.choices[index],
                             onTap: () {
-                              setState(() {
-                                if (question.correctAnswer ==
-                                    question.choices[index]) {
-                                  optionColor[index] = Colors.green;
-                                  correctAnswer++;
-                                  indexOfScore++;
-                                  if (currentIndexOfQuestion <
-                                      state.questions.length - 1) {
-                                    Future.delayed(const Duration(seconds: 1),
-                                        () {
-                                      goToNextQuestion();
-                                    });
-                                  } else {
-                                    Navigator.push(context,
-                                        MaterialPageRoute(builder: (context) {
-                                      return ResultPage(
-                                        correctAnswer: correctAnswer,
-                                      );
-                                    }));
-                                  }
-                                } else {
-                                  optionColor[index] = Colors.red;
+                              if (question.correctAnswer ==
+                                  question.choices[index]) {
+                                cubit.changeColor(index);
+                                cubit.correctAnswer++;
+                                cubit.indexOfScore++;
+                                if (cubit.currentIndexOfQuestion <
+                                    cubit.questions.length - 1) {
                                   Future.delayed(const Duration(seconds: 1),
                                       () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) {
-                                        return ResultPage(
-                                          correctAnswer: correctAnswer,
-                                        );
-                                      }),
-                                    );
+                                    cubit.goToNextQuestion();
                                   });
+                                } else {
+                                  Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) {
+                                    return ResultPage(
+                                      correctAnswer: cubit.correctAnswer,
+                                    );
+                                  }));
                                 }
-                              });
+                              } else {
+                                cubit.changeColor(index);
+                                Future.delayed(const Duration(seconds: 1), () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return ResultPage(
+                                        correctAnswer: cubit.correctAnswer,
+                                      );
+                                    }),
+                                  );
+                                });
+                              }
                             },
                           );
                         }),
@@ -152,13 +111,8 @@ class _QuestionPageState extends State<QuestionPage> {
                 ],
               ),
             );
-          } else if (state is QuizErrorState) {
-            return Center(
-              child: Text(state.errMessage),
-            );
-          }
-          return Container();
-        },
+          },
+        ),
       ),
     );
   }

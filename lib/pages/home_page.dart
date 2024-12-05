@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:million_journey/cubits/quiz_cubit/quiz_cubit.dart';
 import 'package:million_journey/pages/question_page.dart';
 import 'package:million_journey/widgets/custom_button.dart';
 
@@ -18,7 +16,7 @@ class HomePage extends StatelessWidget {
             width: 200,
             text: 'Start',
             onTap: () {
-              BlocProvider.of<QuizCubit>(context).getQuestions();
+              /* BlocProvider.of<QuizCubit>(context).getQuestions(); */
               Navigator.push(
                 context,
                 MaterialPageRoute(
